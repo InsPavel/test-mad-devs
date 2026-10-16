@@ -23,6 +23,7 @@ export type ValidationErrorCode =
   | "END_BEFORE_START"
   | "DURATION_TOO_SHORT"
   | "DURATION_TOO_LONG"
+  | "PAST_DATE"
   | "IN_THE_PAST"
   | "OVERLAP"
   | "UNKNOWN";

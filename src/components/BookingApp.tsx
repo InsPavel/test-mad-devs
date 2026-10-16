@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { ApiError, bookingsApi } from "@/api/client";
 import type { Booking, ValidationError } from "@/domain/types";
-import { toDateString } from "@/domain/time";
+import { isPastDate, toDateString } from "@/domain/time";
 import { BookingForm, type BookingFormValues } from "./BookingForm";
 import { BookingList } from "./BookingList";
 import styles from "./BookingApp.module.css";
@@ -119,12 +119,17 @@ export function BookingApp() {
     );
   }
 
+  const dateIsPast = isPastDate(date);
+  const canCreate = !dateIsPast;
+
   return (
     <div className={styles.app}>
       <header className={styles.header}>
         <div>
           <h1 className={styles.title}>Переговорка</h1>
-          <p className={styles.subtitle}>Бронирование на рабочий день 09:00–18:00</p>
+          <p className={styles.subtitle}>
+            Рабочий день 09:00–18:00 · длительность 30 мин–2 ч
+          </p>
         </div>
         <label className={styles.dateField}>
           <span>Дата</span>
@@ -144,7 +149,7 @@ export function BookingApp() {
         <section className={styles.listSection} aria-live="polite">
           <div className={styles.sectionHead}>
             <h2>Брони на {date}</h2>
-            {!formOpen && (
+            {!formOpen && canCreate && (
               <button type="button" className={styles.newBtn} onClick={openCreate}>
                 + Новая
               </button>
@@ -190,10 +195,16 @@ export function BookingApp() {
             />
           ) : (
             <div className={styles.formPlaceholder}>
-              <p>Выберите бронь для редактирования или создайте новую</p>
-              <button type="button" className={styles.newBtn} onClick={openCreate}>
-                + Новая бронь
-              </button>
+              <p>
+                {dateIsPast
+                  ? "Прошедшая дата — создание брони недоступно"
+                  : "Выберите бронь для редактирования или создайте новую"}
+              </p>
+              {canCreate && (
+                <button type="button" className={styles.newBtn} onClick={openCreate}>
+                  + Новая бронь
+                </button>
+              )}
             </div>
           )}
         </aside>

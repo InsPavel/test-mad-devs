@@ -26,7 +26,10 @@ export function durationMinutes(startTime: string, endTime: string): number {
   return timeToMinutes(endTime) - timeToMinutes(startTime);
 }
 
-/** Half-open interval overlap: [aStart, aEnd) ∩ [bStart, bEnd). */
+/**
+ * Half-open intervals [start, end).
+ * Touching boundaries do NOT overlap: 10:00–11:00 and 11:00–12:00 are allowed.
+ */
 export function intervalsOverlap(
   aStart: string,
   aEnd: string,
@@ -52,4 +55,27 @@ export function toTimeString(date: Date): string {
   const h = String(date.getHours()).padStart(2, "0");
   const m = String(date.getMinutes()).padStart(2, "0");
   return `${h}:${m}`;
+}
+
+export function isPastDate(date: string, now: Date = new Date()): boolean {
+  return date < toDateString(now);
+}
+
+export function isFutureDate(date: string, now: Date = new Date()): boolean {
+  return date > toDateString(now);
+}
+
+export function isToday(date: string, now: Date = new Date()): boolean {
+  return date === toDateString(now);
+}
+
+/** True when the booking start is before "now" on the same calendar day, or the date is past. */
+export function isStartInThePast(
+  date: string,
+  startTime: string,
+  now: Date = new Date(),
+): boolean {
+  if (isPastDate(date, now)) return true;
+  if (isFutureDate(date, now)) return false;
+  return timeToMinutes(startTime) < timeToMinutes(toTimeString(now));
 }
