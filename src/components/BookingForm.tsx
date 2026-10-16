@@ -198,9 +198,17 @@ export function BookingForm({
   return (
     <form className={styles.form} onSubmit={handleSubmit} noValidate>
       <h2 className={styles.heading}>{isEdit ? "Редактировать бронь" : "Новая бронь"}</h2>
-      <p className={styles.meta}>
-        Дата: <strong>{date}</strong> · окно {WORKDAY_START}–{WORKDAY_END} · 30 мин–2 ч
-      </p>
+      <div className={styles.metaGroup}>
+        <p className={styles.meta}>
+          Дата: <strong>{date}</strong>
+        </p>
+        <p className={styles.meta}>
+          Окно: <strong>{WORKDAY_START}–{WORKDAY_END}</strong>
+        </p>
+        <p className={styles.meta}>
+          Длительность: <strong>30 мин–2 ч</strong>
+        </p>
+      </div>
 
       {noSlots ? (
         <div className={styles.error} role="alert">

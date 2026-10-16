@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Meeting Room Booking
 
-## Getting Started
+A web app for booking a meeting room during the workday **09:00–18:00**.
 
-First, run the development server:
+Stack: **Next.js** (App Router) + **TypeScript**, mock API via Route Handlers, API client separated from the UI, domain validation in `src/domain/`.
+
+## Requirements
+
+- Node.js 20+
+- npm
+
+## Setup and run
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Other commands
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Command | Description |
+| --- | --- |
+| `npm run dev` | Development server |
+| `npm run build` | Production build |
+| `npm start` | Run the production build |
+| `npm test` | Unit tests (Vitest, single run) |
+| `npm run test:watch` | Tests in watch mode |
+| `npm run lint` | ESLint |
 
-## Learn More
+## Booking rules
 
-To learn more about Next.js, take a look at the following resources:
+- Work window: **09:00–18:00**
+- `start < end`
+- Duration: **30 minutes to 2 hours**
+- Overlaps are not allowed; **touching boundaries is allowed** (e.g. `10:00–11:00` and `11:00–12:00`)
+- Past dates — create/edit is not available
+- For today, slots earlier than the current time cannot be selected
+- On edit, the current booking is excluded from overlap checks (`excludeId`)
+- On conflict the API returns **409**; the UI refreshes the list and **does not reset** the form
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Data is stored in memory (with demo seeds for past/today/future dates). After a server restart the store resets to the seeds.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Structure
 
-## Deploy on Vercel
+```
+src/
+  domain/          # types, constants, time, slots, validation (+ tests)
+  api/client.ts    # HTTP client for the UI
+  app/api/bookings # CRUD Route Handlers
+  components/      # UI
+  lib/             # in-memory store and seeds
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Tests
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Domain unit tests with **Vitest** (`src/domain/*.test.ts`).
+
+| File | Coverage |
+| --- | --- |
+| `time.test.ts` | Date/time format, duration, half-open overlap (touching boundaries), past time |
+| `slots.test.ts` | Slot generation, filtering past starts for today, end slots 30 min–2 h |
+| `validation.test.ts` | Workday, min/max duration, `PAST_DATE`, `IN_THE_PAST`, `OVERLAP`, `excludeId` |
+
+Run:
+
+```bash
+npm test
+```

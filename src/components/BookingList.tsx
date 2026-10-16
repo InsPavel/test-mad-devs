@@ -1,6 +1,7 @@
 "use client";
 
 import type { Booking } from "@/domain/types";
+import { isStartInThePast } from "@/domain/time";
 import styles from "./BookingList.module.css";
 
 type BookingListProps = {
@@ -32,6 +33,8 @@ export function BookingList({
       {bookings.map((booking) => {
         const isSelected = booking.id === selectedId;
         const isDeleting = booking.id === deletingId;
+        // Past date or start already passed → edit is blocked by domain rules.
+        const canEdit = !isStartInThePast(booking.date, booking.startTime);
 
         return (
           <li
@@ -43,14 +46,16 @@ export function BookingList({
             </div>
             <div className={styles.title}>{booking.title}</div>
             <div className={styles.actions}>
-              <button
-                type="button"
-                className={styles.edit}
-                onClick={() => onEdit(booking)}
-                disabled={isDeleting}
-              >
-                Изменить
-              </button>
+              {canEdit && (
+                <button
+                  type="button"
+                  className={styles.edit}
+                  onClick={() => onEdit(booking)}
+                  disabled={isDeleting}
+                >
+                  Изменить
+                </button>
+              )}
               <button
                 type="button"
                 className={styles.delete}
