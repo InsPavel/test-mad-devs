@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Booking, BookingInput, ValidationError } from "@/domain/types";
 import { availableEndSlots, availableStartSlots } from "@/domain/slots";
 import { WORKDAY_END, WORKDAY_START } from "@/domain/constants";
@@ -91,13 +91,18 @@ export function BookingForm({
     [startTime, startOptions],
   );
 
+  const editingId = initial?.id ?? null;
+  const initialRef = useRef(initial);
+  initialRef.current = initial;
+
+  // Re-init only when date / editing target changes — not on list refresh after 409.
   useEffect(() => {
     if (pastDate) {
       setReady(true);
       return;
     }
 
-    const resolved = resolveTimes(date, now, initial);
+    const resolved = resolveTimes(date, new Date(), initialRef.current);
     setLocalError(null);
 
     if (!resolved) {
@@ -109,7 +114,7 @@ export function BookingForm({
     setStartTime(resolved.startTime);
     setEndTime(resolved.endTime);
     setReady(true);
-  }, [date, initial, pastDate]);
+  }, [date, editingId, pastDate]);
 
   // Keep selection inside the available window as "now" advances.
   useEffect(() => {

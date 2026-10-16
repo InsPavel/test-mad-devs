@@ -1,5 +1,6 @@
 import type { Booking, BookingInput, ValidationError } from "@/domain/types";
 import { validateBooking } from "@/domain/validation";
+import { buildSeedBookings } from "./seed-bookings";
 
 type CreateResult =
   | { ok: true; booking: Booking }
@@ -15,6 +16,20 @@ type UpdateResult =
  */
 class BookingStore {
   private bookings = new Map<string, Booking>();
+
+  constructor() {
+    this.reseed();
+  }
+
+  /**
+   * Load / refresh demo data (including past dates) without domain validation.
+   * Overwrites only seed-* ids so user-created bookings are kept.
+   */
+  reseed() {
+    for (const booking of buildSeedBookings()) {
+      this.bookings.set(booking.id, booking);
+    }
+  }
 
   list(date?: string): Booking[] {
     const all = Array.from(this.bookings.values());
@@ -87,5 +102,7 @@ const globalForStore = globalThis as unknown as { __bookingStore?: BookingStore 
 export const bookingStore = globalForStore.__bookingStore ?? new BookingStore();
 
 if (process.env.NODE_ENV !== "production") {
+  // Refresh relative seed dates on HMR / module reload.
+  bookingStore.reseed();
   globalForStore.__bookingStore = bookingStore;
 }

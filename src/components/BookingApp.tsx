@@ -22,8 +22,10 @@ export function BookingApp() {
   const [serverErrors, setServerErrors] = useState<ValidationError[] | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const load = useCallback(async (selectedDate: string) => {
-    setListState({ status: "loading" });
+  const load = useCallback(async (selectedDate: string, opts?: { silent?: boolean }) => {
+    if (!opts?.silent) {
+      setListState({ status: "loading" });
+    }
     try {
       const bookings = await bookingsApi.list(selectedDate);
       setListState({ status: "ready", bookings });
@@ -77,9 +79,12 @@ export function BookingApp() {
       await load(values.date);
     } catch (err) {
       if (err instanceof ApiError) {
-        // On 409 (and other validation errors) keep the form and values as-is.
+        // Keep form open and preserve entered values; refresh list on conflict.
         setServerErrors(err.errors ?? [{ code: "OVERLAP", message: err.message }]);
         setFormOpen(true);
+        if (err.isConflict) {
+          await load(values.date, { silent: true });
+        }
       } else {
         setServerErrors([
           { code: "UNKNOWN", message: "Неизвестная ошибка при сохранении" },
