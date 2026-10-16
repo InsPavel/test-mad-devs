@@ -4,6 +4,8 @@ A web app for booking a meeting room during the workday **09:00–18:00**.
 
 Stack: **Next.js** (App Router) + **TypeScript**, mock API via Route Handlers, API client separated from the UI, domain validation in `src/domain/`.
 
+**Time spent:** ~3.5 hours
+
 ## Requirements
 
 - Node.js 20+
